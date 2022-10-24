@@ -37,7 +37,6 @@ KEEP_ONE_PER_WEEK = 4  # ...
 KEEP_ONE_PER_MONTH = 12  # ...
 MIN_SPACE_REQUIREMENT = 1024  # in MB
 MIN_INODES_REQUIREMENT = 100000
-__import__('pdb').set_trace()
 if os.getuid() == 0:
     LOG_FILE = '/var/log/py-time-machine.log'
 else:
