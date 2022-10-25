@@ -1,0 +1,61 @@
+# Lines beginning with '#' are comments. All after '#' starts to be inline
+# comment.
+
+# Source location(s). Note, that it might be from local file system, or
+# remote. Local/remote locations cannot be mixed. Also it's impossible
+# to do rsync from remote to remote locations. To use remote location, use:
+# - [user@]host:/remote/path
+# Same applies for "dest" section.
+source:
+  # it can be either single entry, like:
+  # source: /home/infinet
+  # or a list:
+  - /home/infinet/
+  - /etc/
+  - /root/
+  - /var/spool/cron/crontabs/
+# As for destination, it required to be single entry
+dest: /mnt/usbbackup/time-capsule/tungsten/
+
+# This section can be omitted. You can define here patterns to be excluded
+# from syncing.
+exclude:
+  # Match whole filename or directory name, because rsync is recursive, all
+  # sub-dirs are also matched. Watch out for special characters - they need to
+  # be enclosed in quotes.
+  - .DS_Store
+  - Thumbs.db
+  - "*~"
+  - "*.swp"
+  - do.not.backup
+  - .thumbnails
+  - .icons
+  - .gvfs
+  - "*[Tt]rash"
+  - "*[Cc]ache"
+  - "[Tt]mp"
+  - "[Tt]emp"
+  - etc/alternatives
+  - etc/rc?.d
+  - etc/ssl
+  - /home/infinet/Private  # eCryptfs mountpoint
+  - urlclassifier3.sqlite
+  - .VirtualBox
+
+# All the following sections may be omitted, as they have default as fallows
+smart_remove:
+  # Keep all snapshots for last n days, the default value is 1.
+  keep_all: 1
+  # Keep one snapshot per day for last n days, default 7.
+  keep_one_per_day: 7
+  # Keep one snapshot per week for last n weeks, default 4.
+  keep_one_per_week: 4
+  # Keep one snapshot per month for last n months, default 12.
+  keep_one_per_month: 12
+
+
+free_space:
+  # Free space and inodes requirement. Backup will not start if there is not
+  # enough space or inodes.
+  min_space: 1024       # minimum space in MB, default to 1024 MB
+  min_inodes: 100000    # minimum free inodes, default to 100000

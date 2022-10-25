@@ -7,7 +7,6 @@ Inspired by rsync-time-machine https://github.com/infinet/rsync-time-machine
 """
 import argparse
 import collections
-import configparser
 import datetime
 import fcntl
 import getpass
@@ -19,6 +18,8 @@ import shutil
 import subprocess
 import sys
 
+import yaml
+import yaml.error
 
 ONEK = 1024.0
 ONEM = 1048576.0
@@ -27,8 +28,8 @@ ONET = 1099511627776.0
 ONEDAY = datetime.timedelta(days=1)
 
 XDG_CONF_DIR = os.getenv('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
-CONF_FILES = [os.path.join(XDG_CONF_DIR, 'py-time-machine.conf'),
-              '/etc/py-time-machine.conf']
+CONF_FILES = [os.path.join(XDG_CONF_DIR, 'py-time-machine.yaml'),
+              '/etc/py-time-machine.yaml']
 
 # default values
 KEEP_ALL = 1  # keep all snapshots for last x days
@@ -97,15 +98,6 @@ PAT_STAT = re.compile(r'.*Namelen: (?P<namemax>\d+).*'
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
-
-
-class MultiOrderedDict(collections.OrderedDict):
-    """help configParse get multiple values for same key"""
-    def __setitem__(self, key, value):
-        if isinstance(value, list) and key in self:
-            self[key].extend(value)
-        else:
-            super(collections.OrderedDict, self).__setitem__(key, value)
 
 
 class PyTimeMachine:
@@ -594,73 +586,57 @@ class PyTimeMachine:
                     fobj.read()
             except OSError as ex:
                 pass
-                logging.errot(f'Cannot access file {self._configfile}: '
-                              f'{ex.strerror}')
+                logging.error('Cannot access file %s: %s', self._configfile,
+                              ex.strerror)
                 sys.exit(1)
 
-        config = configparser.RawConfigParser(dict_type=MultiOrderedDict,
-                                              allow_no_value=True,
-                                              strict=False)
-        conf_read = False
         for fname in conf_files:
             if not os.path.exists(fname):
+                # lets try another location
                 continue
 
-            config.read(fname)
-            conf_read = True
+            try:
+                with open(fname) as fobj:
+                    conf_dict = yaml.safe_load(fobj)
+            except OSError as ex:
+                logging.error('Cannot access file %s: %s', self._configfile,
+                              ex.strerror)
+                sys.exit(1)
+
+            except yaml.error.YAMLError as ex:
+                logging.error('Error loading config file:\n%s', str(ex))
+                sys.exit(1)
+
             break
 
-        if not conf_read:
-            print('There was no config file found either systemwide or user '
-                  'specific')
-            sys.exit(1)
-        if conf_read and not (config.has_section('source') and
-                              config.has_section('dest')):
+        # check required options
+        if not all((conf_dict.get('source'), conf_dict.get('dest'))):
             print('Invalid config file')
             sys.exit(1)
 
-        try:
-            self.sources = [x for x in config.get('source', 'path') if x]
-        except configparser.NoOptionError:
-            logging.error('Invalid configuration for source section - no path '
-                          'defined.')
+        self.sources = conf_dict['source']
+        if isinstance(self.sources, str):
+            self.sources = [self.sources]
+
+        self.destination = conf_dict['dest']
+        if not isinstance(self.destination, str):
+            print('Invalid config file: Destination should be single string.')
             sys.exit(1)
 
-        try:
-            val = [x for x in config.get('dest', 'path') if x]
-            if val and len(val) > 0:
-                self.destination = val[0]
-        except configparser.NoOptionError:
-            logging.error('Invalid configuration for dest section - no path '
-                          'defined.')
-            sys.exit(1)
+        self.exclude = conf_dict['exclude']
+        if isinstance(self.exclude, str):
+            self.exclude = [self.exclude]
 
-        try:
-            self.exclude = [x for x in config.get('exclude', 'pattern') if x]
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            pass
+        sr = conf_dict.get('smart_remove', {})
+        for key in ('keep_all', 'keep_one_per_day', 'keep_one_per_week',
+                    'keep_one_per_month'):
+            if sr.get(key):
+                self.smart_remove[key] = sr[key]
 
-        for key in self.smart_remove:
-            try:
-                val = config.get('smart_remove', key)
-                if val and len(val) > 0:
-                    self.smart_remove[key] = int(val[0])
-            except (configparser.NoOptionError, configparser.NoSectionError):
-                pass
-
-        try:
-            val = config.get('free space', 'min_space')
-            if val and len(val) > 0:
-                self.min_space = int(val[0])
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            pass
-
-        try:
-            val = config.get('free space', 'min_inodes')
-            if val and len(val) > 0:
-                self.min_inodes = int(val[0])
-        except (configparser.NoOptionError, configparser.NoSectionError):
-            pass
+        sr = conf_dict.get('free_space', {})
+        for key in ('min_space', 'min_inodes'):
+            if sr.get(key):
+                setattr(self, key, sr[key])
 
 
 def _run(command):

@@ -12,6 +12,7 @@ Same as in `rsync-time-machine`_, but also:
 * Python3 support
 * Backup to remote host
 * Configuration will be read from ``XDG_CONFIG_HOME`` or ``/etc/``
+* Using yaml instead of ini style config files
 
 
 Usage
@@ -31,20 +32,20 @@ or provide configuration file:
 
 .. code:: shell-session
 
-   $ py-time-machine.py -c file_with_configuration.conf
+   $ py-time-machine.py -c file_with_configuration.yaml
 
 
 Configuration
 -------------
 
-Sample configuration can be found with this repository. To configure remote
-host, it's as simple as:
+Sample configuration can be found with this repository with comments. To
+configure remote host, it's as simple as:
 
-.. code:: ini
+.. code:: yaml
 
-   [dest]
-   path = user@hostname_or_ip_address:/path/to/the/backup
-
+   ...
+   dest: user@hostname_or_ip_address:/path/to/the/backup
+   ...
 
 In this example ``user@`` might be omitted, so that current user would be used.
 Please note, that in case of remote destination, absolute path should be used.
