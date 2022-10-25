@@ -61,7 +61,7 @@ RSYNC_ARGS = ('--delete',
               '--relative',
               '--times',
               '-D',
-              '-v')
+              '-q')
 
 RSYNC_EXIT_CODE = {0: 'Success',
                    1: 'Syntax or usage error',
@@ -128,7 +128,6 @@ class PyTimeMachine:
         try:
             self._create_dest_directory()
             stat_before = self._check_freespace()
-            print('run!')
             self._take_snapshot()
             logging.info('Filesystem before backup:')
             self._print_fs_stat(stat_before)
