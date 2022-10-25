@@ -508,7 +508,8 @@ class PyTimeMachine:
             result['islink'] = os.path.islink(latest)
             result['exists'] = os.path.islink(latest)
             result['broken'] = not os.path.exists(latest)
-            result['target'] = os.readlink(latest)
+            result['target'] = os.path.join(self._dst_path,
+                                            os.readlink(latest))
         else:
             result['exists'] = os.path.islink(latest)
         return result
