@@ -615,7 +615,8 @@ class PyTimeMachine:
 
         # check required options
         if not all((conf_dict.get('source'), conf_dict.get('destination'))):
-            print('Invalid config file')
+            logging.error('Invalid config file: no source and/or destination '
+                          'keys found')
             sys.exit(1)
 
         self.sources = conf_dict['source']
@@ -624,7 +625,8 @@ class PyTimeMachine:
 
         self.destination = conf_dict['destination']
         if not isinstance(self.destination, str):
-            print('Invalid config file: Destination should be single string.')
+            logging.error('Invalid config file: Destination should be single '
+                          'string.')
             sys.exit(1)
 
         self.exclude = conf_dict['exclude']
