@@ -50,6 +50,22 @@ configure remote host, it's as simple as:
 In this example ``user@`` might be omitted, so that current user would be used.
 Please note, that in case of remote destination, absolute path should be used.
 
+If needed, there is also a section, where rsh command might be tweaked, i.e.
+for usage different keys and/or ssh options:
+
+.. code:: yaml
+
+   ...
+   rsh_command: >-
+     ssh -i /path/to/ssh-key -o 'StrictHostKeyChecking=no' -o
+     'UserKnownHostsFile=/dev/null'
+   ...
+
+Using yamls' ``>-`` notation all of the string will be concatenated and **not**
+terminated with newline character. Be careful, to not put special characters
+like dash or asterisk at the beginning of the broken line, or there will be
+issue with config reported.
+
 
 License
 -------

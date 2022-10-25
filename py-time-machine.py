@@ -112,6 +112,7 @@ class PyTimeMachine:
                              'keep_one_per_day': KEEP_ONE_PER_DAY,
                              'keep_one_per_week': KEEP_ONE_PER_WEEK,
                              'keep_one_per_month': KEEP_ONE_PER_MONTH}
+        self.rsh_command = ''
 
         self._configfile = None
         if args.config:
@@ -221,6 +222,10 @@ class PyTimeMachine:
         backup_dst = os.path.join(self._dst_path,
                                   now.strftime("%Y-%m-%d_%H:%M:%S_GMT"))
         args = [x for x in RSYNC_ARGS]
+
+        if self.rsh_command:
+            args.extend(['-e', self.rsh_command])
+
         exclude_patterns = ['--exclude=%s' % x for x in self.exclude]
         args.extend(exclude_patterns)
 
@@ -636,6 +641,9 @@ class PyTimeMachine:
         for key in ('min_space', 'min_inodes'):
             if sr.get(key):
                 setattr(self, key, sr[key])
+
+        if conf_dict.get('rsh_command'):
+            self.rsh_command = conf_dict['rsh_command']
 
 
 def _run(command):

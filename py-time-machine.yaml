@@ -43,6 +43,8 @@ exclude:
   - .VirtualBox
 
 # All the following sections may be omitted, as they have default as fallows
+
+# Remove strategy for intermediate snapshots
 smart_remove:
   # Keep all snapshots for last n days, the default value is 1.
   keep_all: 1
@@ -53,9 +55,14 @@ smart_remove:
   # Keep one snapshot per month for last n months, default 12.
   keep_one_per_month: 12
 
-
+# Free space and inodes requirement. Backup will not start if there is not
+# enough space or inodes.
 free_space:
-  # Free space and inodes requirement. Backup will not start if there is not
-  # enough space or inodes.
   min_space: 1024       # minimum space in MB, default to 1024 MB
   min_inodes: 100000    # minimum free inodes, default to 100000
+
+# Rsh command empty by defaul. You can put specific things like ssh option
+# and keys, for example:
+rsh_command: >-
+  ssh -i /path/to/ssh-key -o 'StrictHostKeyChecking=no' -o
+  'UserKnownHostsFile=/dev/null'
