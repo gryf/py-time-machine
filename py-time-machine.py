@@ -95,12 +95,8 @@ PAT_STAT = re.compile(r'.*Namelen: (?P<namemax>\d+).*'
                       r'Inodes: Total: (?P<files>\d+)\s+'
                       r'Free: (?P<ffree>\d+)', re.DOTALL | re.MULTILINE)
 
-
-logging.basicConfig(filename=LOG_FILE,
-                    filemode='a',
-                    format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     level=logging.DEBUG)
-print(f'Logfile will be written in {LOG_FILE}')
 
 
 class MultiOrderedDict(collections.OrderedDict):
