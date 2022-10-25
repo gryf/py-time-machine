@@ -614,7 +614,7 @@ class PyTimeMachine:
             break
 
         # check required options
-        if not all((conf_dict.get('source'), conf_dict.get('dest'))):
+        if not all((conf_dict.get('source'), conf_dict.get('destination'))):
             print('Invalid config file')
             sys.exit(1)
 
@@ -622,7 +622,7 @@ class PyTimeMachine:
         if isinstance(self.sources, str):
             self.sources = [self.sources]
 
-        self.destination = conf_dict['dest']
+        self.destination = conf_dict['destination']
         if not isinstance(self.destination, str):
             print('Invalid config file: Destination should be single string.')
             sys.exit(1)

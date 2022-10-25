@@ -44,7 +44,7 @@ configure remote host, it's as simple as:
 .. code:: yaml
 
    ...
-   dest: user@hostname_or_ip_address:/path/to/the/backup
+   destination: user@hostname_or_ip_address:/path/to/the/backup
    ...
 
 In this example ``user@`` might be omitted, so that current user would be used.
