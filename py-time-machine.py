@@ -6,7 +6,6 @@ Rsync Time Machine Style backup.
 Inspired by rsync-time-machine https://github.com/infinet/rsync-time-machine
 """
 import argparse
-import collections
 import datetime
 import fcntl
 import getpass
@@ -460,12 +459,12 @@ class PyTimeMachine:
             return
 
         for snapshot in del_snapshots:
-            logging.info('[Smart remove] delete snapshot %s' % s)
+            logging.info('[Smart remove] delete snapshot %s' % snapshot)
 
             if self.is_dst_remote:
                 _run(self._dst_cmd[:] + ['rm', '-fr', snapshot])
             else:
-                shutil.rmtree(snapshots)
+                shutil.rmtree(snapshot)
 
     def _run_rsync(self, args):
         cmd = ['rsync']
