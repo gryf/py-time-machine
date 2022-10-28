@@ -628,7 +628,7 @@ class PyTimeMachine:
                           'string.')
             sys.exit(1)
 
-        self.exclude = conf_dict['exclude']
+        self.exclude = conf_dict.get('exclude', [])
         if isinstance(self.exclude, str):
             self.exclude = [self.exclude]
 
