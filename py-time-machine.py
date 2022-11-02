@@ -30,13 +30,6 @@ XDG_CONF_DIR = os.getenv('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
 CONF_FILES = [os.path.join(XDG_CONF_DIR, 'py-time-machine.yaml'),
               '/etc/py-time-machine.yaml']
 
-# default values
-KEEP_ALL = 1  # keep all snapshots for last x days
-KEEP_ONE_PER_DAY = 7  # keep one snapshots per day for last x days
-KEEP_ONE_PER_WEEK = 4  # ...
-KEEP_ONE_PER_MONTH = 12  # ...
-MIN_SPACE_REQUIREMENT = 1024  # in MB
-MIN_INODES_REQUIREMENT = 100000
 if os.getuid() == 0:
     LOG_FILE = '/var/log/py-time-machine.log'
 else:
@@ -107,11 +100,11 @@ class PyTimeMachine:
         self.exclude = []
         self.min_space = 1024
         self.min_inodes = 100000
-        self.smart_remove = {'keep_all': KEEP_ALL,
-                             'keep_one_per_day': KEEP_ONE_PER_DAY,
-                             'keep_one_per_week': KEEP_ONE_PER_WEEK,
-                             'keep_one_per_month': KEEP_ONE_PER_MONTH}
-        self.rsh_command = ''
+        self.smart_remove = {'keep_all': 1,
+                             'keep_one_per_day': 7,
+                             'keep_one_per_week': 4,
+                             'keep_one_per_month': 12}
+        self.rsh_command = None
 
         self._configfile = None
         if args.config:
@@ -126,6 +119,7 @@ class PyTimeMachine:
         self._read_config()
         self._flock_exclusive()
         try:
+            logging.info("Start backup to %s", self.destination)
             self._create_dest_directory()
             stat_before = self._check_freespace()
             self._take_snapshot()
@@ -133,6 +127,7 @@ class PyTimeMachine:
             self._print_fs_stat(stat_before)
             logging.info('Filesystem after backup:')
             self._print_fs_stat(self._get_stat())
+            logging.info("All done")
         finally:
             self._flock_release()
 
@@ -232,6 +227,7 @@ class PyTimeMachine:
         latest_stat = self._get_file_stat(latest)
         if len(snapshots) > 0 and latest_stat['exists']:
             last_snapshot = latest_stat['target']
+            logging.info('Copying last snapshot.')
             if self.is_dst_remote:
                 res = _run(self._dst_cmd[:] + ['cp', '-arl', last_snapshot,
                                                backup_dst])
@@ -239,7 +235,7 @@ class PyTimeMachine:
                 res = _run(['cp', '-arl', last_snapshot, backup_dst])
 
             if res.returncode != 0:
-                logging.info('**** unable to clone last snapshot, abort ****')
+                logging.error('Unable to clone last snapshot, abort.')
                 exit(2)
 
         elif len(snapshots) > 0 and not latest_stat['exists']:
@@ -455,11 +451,11 @@ class PyTimeMachine:
             del_snapshots.append(s)
 
         if not del_snapshots:
-            logging.info('[Smart remove] no snapshot to remove')
+            logging.info('No snapshot to remove')
             return
 
         for snapshot in del_snapshots:
-            logging.info('[Smart remove] delete snapshot %s' % snapshot)
+            logging.info('Delete snapshot %s', snapshot)
 
             if self.is_dst_remote:
                 _run(self._dst_cmd[:] + ['rm', '-fr', snapshot])
@@ -473,7 +469,7 @@ class PyTimeMachine:
         try:
             res = _run(cmd)
             if res.returncode == 0:
-                logging.info('===== %s synced successfully ====' % args[-2])
+                logging.info('Rsynced successfully')
             else:
                 logging.error('Rsync Error %d, %s', res.returncode,
                               RSYNC_EXIT_CODE[res.returncode])
