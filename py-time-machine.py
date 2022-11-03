@@ -88,9 +88,6 @@ PAT_STAT = re.compile(r'.*Namelen: (?P<namemax>\d+).*'
                       r'Inodes: Total: (?P<files>\d+)\s+'
                       r'Free: (?P<ffree>\d+)', re.DOTALL | re.MULTILINE)
 
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                    level=logging.DEBUG)
-
 
 class PyTimeMachine:
 
@@ -114,6 +111,18 @@ class PyTimeMachine:
         self._fl = None
 
         self._check_inodes = True
+
+        self._setup_logger(args.log)
+
+    def _setup_logger(self, logfilename):
+        handlers = [logging.StreamHandler(sys.stdout)]
+        if logfilename:
+            handlers.append(logging.FileHandler(logfilename, mode="a"))
+
+        logging.basicConfig(handlers=handlers,
+                            level=logging.DEBUG,
+                            format="%(asctime)s - %(levelname)s - %(message)s",
+                            datefmt="%Y-%m-%d %H:%M:%S")
 
     def run(self):
         self._read_config()
@@ -474,7 +483,7 @@ class PyTimeMachine:
                 logging.error('Rsync Error %d, %s', res.returncode,
                               RSYNC_EXIT_CODE[res.returncode])
         except Exception:
-            logging.info('Rsync Exception')
+            logging.error('Rsync Exception')
 
     def _get_file_stat(self, latest):
         result = {'exists': False, 'broken': False, 'islink': False,
@@ -650,6 +659,7 @@ def _run(command):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', help='alternative config file')
+    parser.add_argument('-l', '--log', help='log to provided file')
 
     args = parser.parse_args()
 

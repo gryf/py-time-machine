@@ -34,6 +34,19 @@ or provide configuration file:
 
    $ py-time-machine.py -c file_with_configuration.yaml
 
+There is an option for redirecting log to a file, by passing its location with
+``--log`` parameter:
+
+.. code:: shell-session
+
+   $ py-time-machine.py -c file_with_configuration.yaml -l ~/.ptm.log
+
+or, as a root, using global configuration:
+
+.. code:: shell-session
+
+   # py-time-machine.py -l /var/log/py-time-machine.log
+
 
 Configuration
 -------------
