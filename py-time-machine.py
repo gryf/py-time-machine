@@ -598,6 +598,7 @@ class PyTimeMachine:
                               ex.strerror)
                 sys.exit(1)
 
+        conf_dict = None
         for fname in conf_files:
             if not os.path.exists(fname):
                 # lets try another location
@@ -616,6 +617,13 @@ class PyTimeMachine:
                 sys.exit(1)
 
             break
+
+        if conf_dict is None:
+            logging.error('Cannot find config file. Provide one with the '
+                          '`--config` argument, or populate it in the common '
+                          'locations:\n - %s\n - %s', CONF_FILES[0],
+                          CONF_FILES[1])
+            sys.exit(2)
 
         # check required options
         if not all((conf_dict.get('source'), conf_dict.get('destination'))):
